@@ -2,12 +2,11 @@
 #config.sh
 PROGRAMS=(
 	#terminal
-	zoxide zsh
+	zoxide #zsh
 	alacritty
 	ripgrep fzf
 	btop fastfetch
 	#neovim
-	neovim
 	unzip fd
 	#browser
 	firefox
@@ -61,7 +60,7 @@ if [[ "$init" = "y" || "$init" = "Y" ]]; then
 	mount --mkdir $BOOT /mnt/boot
 	swapon $SWAP
 
-	pacstrap -K /mnt base linux linux-firmware intel-ucode nvidia networkmanager neovim #duplicate
+	pacstrap -K /mnt base linux linux-firmware intel-ucode nvidia networkmanager neovim zsh #duplicate
 
 	read -p "fstab? (y/N): " fstab
 	if [[ "$fstab" = "y" || "$fstab" = "Y" ]]; then 
@@ -81,6 +80,11 @@ if [[ "$init" = "y" || "$init" = "Y" ]]; then
 
 	sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
+	echo "blacklist pcspkr\nblacklist snd_pcsp" > /etc/modprobe.d/nobeep.conf
+
+	useradd -m -G wheel -s /usr/bin/zsh $USERNAME
+	passwd $USERNAME
+
 	mkinitcpio -P
 
 	passwd
@@ -93,4 +97,6 @@ if [[ "$init" = "y" || "$init" = "Y" ]]; then
 	if [[ "$reboot" = "y" || "$reboot" = "Y" ]]; then 
 		reboot now
 	fi
+else
+	
 fi
