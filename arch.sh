@@ -8,10 +8,12 @@ PROGRAMS=(
 	btop fastfetch
 	#neovim
 	unzip fd
+	wl-clipboard
 	#browser
 	firefox
 	#version control
-	chezmoi git gh
+	chezmoi git
+	github-cli
 	#man
 	man-db
 	man-pages
@@ -20,8 +22,11 @@ PROGRAMS=(
 	#hyprland
 	hyprland
 	sddm
+	dunst
 	#misc
 	plocate
+	thunderbird
+	ttf-meslo-nerd
 )
 SHELL=/usr/bin/zsh
 USERNAME=nub
@@ -83,6 +88,7 @@ if [[ "$init" = "y" || "$init" = "Y" ]]; then
 	echo "blacklist pcspkr\nblacklist snd_pcsp" > /etc/modprobe.d/nobeep.conf
 
 	useradd -m -G wheel -s /usr/bin/zsh $USERNAME
+	sed -i 's/#%wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL)' /etc/sudoers #does it exist yet?
 	passwd $USERNAME
 
 	mkinitcpio -P
@@ -97,6 +103,31 @@ if [[ "$init" = "y" || "$init" = "Y" ]]; then
 	if [[ "$reboot" = "y" || "$reboot" = "Y" ]]; then 
 		reboot now
 	fi
-else
-	
+fi
+
+if ! command -v yay &> /dev/null; then
+	cd ~
+	git clone https://aur.archlinux.org/yay
+	cd yay
+	pacman -S base-devel
+	makepkg -si
+	yay -v
+	cd ~
+	rm -rf ~/yay
+fi
+
+pacman -Syyu
+read -p "programs? (Y/n): " progs
+if [[ "$progs" = "n" || "$progs" = "N" ]]; then 
+	pacman -S ${PROGRAMS[@]}
+fi
+
+read -p "config? (Y/n): " cfg
+if [[ "$cfg" = "n" || "$cfg" = "N" ]]; then 
+	if [ ! -d ~/.local/share/chezmoi/ ]; then
+		chezmoi init thenuboflegend
+		chezmoi apply -v
+	else
+		chezmoi update -v
+	fi
 fi
